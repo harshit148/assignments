@@ -12,8 +12,8 @@ function mathMethods(value) {
 
   let randomValue = Math.random();
   console.log("After random():", randomValue);
-
-  let maxValue = Math.max(5, 10, 15);
+  const arr = [2,3,4];
+  let maxValue = Math.max(...arr);
   console.log("After max():", maxValue);
 
   let minValue = Math.min(5, 10, 15);
@@ -27,6 +27,6 @@ function mathMethods(value) {
 }
 
 // Example Usage for Math Methods
-mathMethods(4.56);
+mathMethods(4.5);
 mathMethods(9);
 mathMethods(25);

@@ -8,10 +8,12 @@ function jsonMethods(jsonString) {
   // Stringifying JavaScript object to JSON string
   let jsonStringified = JSON.stringify(parsedObject);
   console.log("After JSON.stringify():", jsonStringified);
+
+  console.log(jsonString == jsonStringified);
 }
 
 // Example Usage for JSON Methods
 const sampleJSONString =
-  '{"key": "value", "number": 42, "nested": {"nestedKey": "nestedValue"}}';
+  '{"key":"value","number":42,"nested":{"nestedKey":"nestedValue"}}';
 
 jsonMethods(sampleJSONString);

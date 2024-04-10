@@ -9,4 +9,6 @@ class Animal {
   }
 }
 
-
+animal = new Animal(legCount=4, name="Lio");
+console.log(animal.describe());
+console.log(animal.legCount);
