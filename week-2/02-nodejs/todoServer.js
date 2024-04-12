@@ -41,9 +41,106 @@
  */
   const express = require('express');
   const bodyParser = require('body-parser');
-  
+  const fs = require('fs');
+  const path = require('path');
   const app = express();
   
   app.use(bodyParser.json());
-  
+
+app.get('/todos', (req, res) => {
+    fs.readFile(path.join(__dirname, './todos.json'), 'utf-8', (err, data) => {
+      if (err) {
+        res.status(500).send('Failed to get todos');
+      }
+      const parsedData = JSON.parse(data);
+      const todos = parsedData.todos;
+      res.status(200).json(todos);
+    });
+  });
+
+app.get('/todos/:id' ,(req, res) => {
+  try {
+    const data = fs.readFileSync(path.join(__dirname, './todos.json'), { encoding: 'utf-8'});
+    const parsedData = JSON.parse(data);
+    const todo = parsedData.todos.filter((item) => item.id == req.params.id);
+    if (!todo[0]) {
+      return res.status(404).send("Todo not found");
+    }
+    res.status(200).send(JSON.stringify(todo[0]));
+  }
+  catch(err) {
+    res.status(404).send('Failed to get todos');
+  }
+});
+
+app.post('/todos', (req, res)=> {
+  let newTodo = req.body;
+  const data = fs.readFileSync(path.join(__dirname, './todos.json'), { encoding: 'utf-8'});
+    if (data === "{}") {
+      newTodo.id = 1
+      const todoArray = new Array();
+      todoArray.push(newTodo);
+      const firstTodo = {todos: todoArray, lastId: 1}
+      fs.writeFileSync(path.join(__dirname, './todos.json'), JSON.stringify(firstTodo), "utf-8");
+    }
+    else {
+      const parsedData = JSON.parse(data);
+      newTodo.id = parsedData.lastId + 1;
+      parsedData.todos.push(newTodo);
+      parsedData.lastId = newTodo.id;
+      fs.writeFileSync(path.join(__dirname, './todos.json'), JSON.stringify(parsedData), "utf-8");
+    }
+    res.status(201).json({
+      id: newTodo.id
+    });
+});
+
+app.put('/todos/:id', (req,res) => {
+  const data = fs.readFileSync(path.join(__dirname, './todos.json'), { encoding: 'utf-8'});
+  const newTitle = req.body.title;
+  const newCompleted = req.body.completed;
+  const parsedData = JSON.parse(data);
+  const todo = parsedData.todos.filter(item => item.id == req.params.id);
+  if (!todo[0]) {
+    return res.status(404).send("Todo not found");
+  }
+  const updatedTodos = parsedData.todos.map((element)=> {
+    if (element.id == req.params.id) {
+      if (newTitle && newCompleted) {
+        return {...element, "title": newTitle, "completed": newCompleted};
+      }
+      else if(newTitle) {
+        return {...element, "title": newTitle}
+      }
+      else {
+        return {...element, "completed": newCompleted};
+      }
+    }
+    return element;
+  });
+  const updatedJSON = {todos: updatedTodos, lastId: parsedData.lastId}
+  fs.writeFileSync(path.join(__dirname, './todos.json'), JSON.stringify(updatedJSON), "utf-8");
+  res.status(200).send("Todo item updated");
+});
+
+app.delete('/todos/:id', (req,res) => {
+  const data = fs.readFileSync(path.join(__dirname, './todos.json'), { encoding: 'utf-8'});
+  const parsedData = JSON.parse(data);
+  const todo = parsedData.todos.filter(item => item.id == req.params.id);
+  if (!todo[0]) {
+    return res.status(404).send("Todo not found");
+  }
+  const updatedTodos = parsedData.todos.filter(element=> element.id != req.params.id);
+  let updatedJSON;
+  if (updatedTodos.length === 0) {
+    updatedJSON = {};
+  }
+  else {
+    updatedJSON = {todos: updatedTodos, lastId: parsedData.lastId}
+  }
+  fs.writeFileSync(path.join(__dirname, './todos.json'), JSON.stringify(updatedJSON), "utf-8");
+  res.status(200).send("Todo item deleted");
+});
+
+
   module.exports = app;
